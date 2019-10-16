@@ -25,7 +25,7 @@ import math
 import cmath
 import matplotlib.pyplot as plt
 
-class TestResponse(unittest.TestCase,si.test.ResponseTesterHelper):
+class TestResponse(unittest.TestCase,si.test.ResponseTesterHelper,si.test.SParameterCompareHelper):
     def id(self):
         return '.'.join(unittest.TestCase.id(self).split('.')[-3:])
     def testResampleResponseCompareSpline(self):
@@ -428,5 +428,29 @@ class TestResponse(unittest.TestCase,si.test.ResponseTesterHelper):
         frc=irc.FrequencyResponse()
         TD2=frc._FractionalDelayTime()
         self.assertAlmostEqual(TD1,TD2,None,'TimeDelay incorrect')
+    def testDCPointRestoreSimplest(self):
+        return
+        K=8
+        import random
+        ir=si.td.wf.ImpulseResponse(si.td.wf.TimeDescriptor(0.,K/2,1.),[random.random() for _ in range(K/2)]).FrequencyResponse().ImpulseResponse()
+        fr=ir.FrequencyResponse()
+        frNoDC=si.fd.FrequencyResponse(fr.Frequencies()[1:],fr.Values()[1:])
+        frDCrestored=frNoDC.Resample(fr.FrequencyList())
+        self.assertEqual(fr, frDCrestored, 'DC point restore failed')
+    def testDCPointRestoreTwoPoints(self):
+        return
+        K=8
+        import random
+        ir=si.td.wf.ImpulseResponse(si.td.wf.TimeDescriptor(0.,K/2,1.),[k+1 for k in range(K/2)]).FrequencyResponse().ImpulseResponse()
+        fr=ir.FrequencyResponse()
+        frNoDC=si.fd.FrequencyResponse(fr.Frequencies()[2:],fr.Values()[2:])
+        frDCrestored=frNoDC.Resample(fr.FrequencyList())
+        self.assertEqual(fr, frDCrestored, 'Two point DC point restore failed')
+    def testRestoreCable5points(self):
+        PointsMissing=1
+        spCable=si.sp.SParameterFile('cable.s2p').Resample(si.fd.EvenlySpacedFrequencyList(20e9,800)).EnforceCausality()
+        spCableNoDC=si.sp.SParameters(spCable.m_f[PointsMissing:],spCable.m_d[PointsMissing:])
+        spCableDCRestored=spCableNoDC.Resample(spCable.m_f).WriteToFile('cableDCRestored')
+        self.assertTrue(self.SParametersAreEqual(spCable,spCableDCRestored))
 if __name__ == '__main__':
     unittest.main()
