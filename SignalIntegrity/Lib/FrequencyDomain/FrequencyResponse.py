@@ -18,7 +18,7 @@ Frequency Response
 # You should have received a copy of the GNU General Public License along with this program.
 # If not, see <https://www.gnu.org/licenses/>
 
-from numpy import fft,matrix
+from numpy import fft,matrix,linalg
 import math
 import cmath
 
@@ -29,7 +29,7 @@ from SignalIntegrity.Lib.TimeDomain.Waveform.TimeDescriptor import TimeDescripto
 from SignalIntegrity.Lib.Splines import Spline
 from SignalIntegrity.Lib.ChirpZTransform import CZT
 from SignalIntegrity.Lib.Rat import Rat
-from traits.trait_types import self
+#from traits.trait_types import self
 
 class FrequencyResponse(FrequencyDomain):
     """FrequencyResponse
@@ -171,7 +171,7 @@ class FrequencyResponse(FrequencyDomain):
         A=[[0.0 for c in range(2*numMissing-1)] for r in range(numEquations)]
         B=[[0.0] for r in range(numEquations)]
         W=cmath.exp(1j*2*math.pi/newtd.K)
-        Xt=self.Values()
+       
         K=newtd.K
         N=K/2
         X=[0. for n in range(K)]
@@ -191,6 +191,8 @@ class FrequencyResponse(FrequencyDomain):
                     A[r][nm*2-1]=2*(W**((K/2+r)*nm)).real/K
                     A[r][nm*2]=-2*(W**((K/2+r)*nm)).imag/K
             B[r][0]=-1./K*sum([X[n]*W**(n*(K/2+r)) for n in range(K)])
+        s = linalg.svd(matrix(A),compute_uv=False)
+        print (s[0],s[-1])
         missingValues=(matrix(A).getI()*matrix(B)).tolist()
         missingValues=[v[0] for v in missingValues]
         missingValues[0]=missingValues[0].real
@@ -202,6 +204,7 @@ class FrequencyResponse(FrequencyDomain):
                 v[n]=missingValues[2*n-1].real+1j*missingValues[2*n].real
         fr = FrequencyResponse(newfd,v+self.Values())
         return fr
+
     def Resample(self,fdp):
         """Resamples to a different set of frequencies
         @param fdp instance of class FrequencyList to resample to
