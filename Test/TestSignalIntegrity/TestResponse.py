@@ -465,7 +465,7 @@ class TestResponse(unittest.TestCase,si.test.ResponseTesterHelper,si.test.SParam
         spCableDCRestored=spCableNoDC.Resample(spCable.m_f).WriteToFile(r'H:\Projects\Oyster\DCPointExtrapolation\C_1_1_ResponseDCRestored3.s1p')
         self.assertTrue(self.SParametersAreEqual(spCable,spCableDCRestored))
 
-    def testRestoreCable5points(self):
+    def testRestoreCable5points2(self):
         PointsMissing=5
         spCable=si.sp.SParameterFile(r'H:\Projects\Oyster\DCPointExtrapolation\C_1_1_Response.s1p')
         spCableNoDC=si.sp.SParameters(spCable.m_f[PointsMissing:],spCable.m_d[PointsMissing:])
